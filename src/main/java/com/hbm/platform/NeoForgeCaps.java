@@ -333,7 +333,6 @@ public final class NeoForgeCaps {
         long request = Math.min(maxFe, Integer.MAX_VALUE);
         request -= request % feQuantum;
         if (request <= 0) return 0;
-
         try (Transaction outer = Transaction.openRoot()) {
             long available;
             try (Transaction probe = Transaction.open(outer)) {
@@ -344,7 +343,6 @@ public final class NeoForgeCaps {
             }
             long exact = available - available % feQuantum;
             if (exact <= 0) return 0;
-
             long moved =
                     insert ? store.insert((int) exact, outer) : store.extract((int) exact, outer);
             if (moved != exact) return 0;
@@ -402,6 +400,11 @@ public final class NeoForgeCaps {
         // backport: expose the mod's transfer-API handlers as 1.21.1 capabilities and reach
         // foreign blocks/items through theirs (must run after every provider above)
         com.hbm.backport.transfer.TransferBridge.register(event);
+
+        // Optional AE2 Pattern Provider: ICraftingMachine on multiblock cores and cells
+        if (net.neoforged.fml.ModList.get().isLoaded("ae2")) {
+            com.hbm.integration.ae2.Ae2CraftingMachineCompat.register(event);
+        }
     }
 
     public static void registerEnergyItems(RegisterCapabilitiesEvent event) {
